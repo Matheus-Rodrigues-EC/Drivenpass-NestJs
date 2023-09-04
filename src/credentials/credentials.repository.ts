@@ -1,18 +1,37 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { CredentialsService } from './credentials.service';
+import { Injectable } from '@nestjs/common';
+import { createCredentialsDTO } from './dtos/createCredentialsDTO';
+import { PrismaService } from '../prisma/prisma.service';
 
-describe('CredentialsService', () => {
-  let service: CredentialsService;
+@Injectable()
+export class CredentialsRepository {
+  constructor(private readonly prisma: PrismaService) { }
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [CredentialsService],
-    }).compile();
+  async createCredential(data: createCredentialsDTO, userId: number){
+    return await this.prisma.credential.create({
+      data: {
+        ...data,
+        userId
+      },
+      select: { 
+        id: true, title: true, password: true, url: true, userId: true
+      }
+    })
+  }
 
-    service = module.get<CredentialsService>(CredentialsService);
-  });
+  async readCredentialTitleId(title: string, userId: number){
+    return await this.prisma.credential.findUnique({where: {title_userId: {title: title, userId: userId}}});
+  }
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-});
+  async readCredentials(userId: number){
+    return await this.prisma.credential.findMany({where: {userId: userId}});
+  }
+
+  async readCredential(id: number){
+    return await this.prisma.credential.findUnique({where: {id: id}});
+  }
+
+  async deleteCredential(id: number, userId: number){
+    return await this.prisma.credential.delete({where: {id: id, userId: userId}});
+  }
+
+}
