@@ -35,7 +35,7 @@ export class UsersRepository {
     }
 
     async deleteUserData(userId: number){
-      return this.prisma.$transaction([
+      return await this.prisma.$transaction([
         this.prisma.credential.deleteMany({where: {userId: userId}}),
         this.prisma.note.deleteMany({where: {userId: userId}}),
         this.prisma.card.deleteMany({where: {userId: userId}}),
